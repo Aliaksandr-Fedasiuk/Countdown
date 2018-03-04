@@ -25,6 +25,7 @@ bluez-libs-devel-3.7-1.1.i386  <---32-bit
 
 3.
 sudo vi /etc/dbus-1/system.d/bluetooth.conf  
+```xml
 <policy user="<username>">  
     <allow own="org.bluez"/>  
     <allow send_destination="org.bluez"/>  
@@ -41,6 +42,7 @@ sudo vi /etc/dbus-1/system.d/bluetooth.conf
     <allow send_interface="org.freedesktop.DBus.ObjectManager"/>  
     <allow send_interface="org.freedesktop.DBus.Properties"/>  
   </policy>  
+```
 $sudo systemctl daemon-reload  
 $sudo systemctl restart bluetooth  
 
