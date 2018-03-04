@@ -6,8 +6,8 @@ public class Countdown {
     private int seconds;
     private boolean pause = true;
 
-    public Countdown(String time) {
-        this.seconds = Integer.valueOf(time);
+    public Countdown(Integer time) {
+        this.seconds = time;
         this.initTime = seconds;
     }
 
