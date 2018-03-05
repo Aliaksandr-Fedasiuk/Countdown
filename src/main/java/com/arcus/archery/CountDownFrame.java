@@ -14,10 +14,12 @@ public class CountDownFrame extends JFrame {
     private static final long serialVersionUID = 1L;
 
     private Timer timer = new Timer(true);
-    private TimerTask timerTask = new MyTimerTask();
+    private TimerTask countdownTimerTask = new CountdownTimerTask();
+    private TimerTask beeperTimerTask;
 
     private JPanel panel;
     private JLabel count;
+    private JLabel team;
     private Countdown countdown;
 
     public CountDownFrame(final Countdown countdown) {
@@ -29,18 +31,31 @@ public class CountDownFrame extends JFrame {
             @Override
             public void keyPressed(KeyEvent e) {
                 System.out.println("Pressed: " + e.getKeyCode());
-                if (e.getKeyChar() == 32) {
-                    if (countdown.isFinished()) {
-                        init();
-                    } else {
-                        if (countdown.isPause()) {
-                            start();
+                switch (e.getKeyChar()) {
+                    case 32:
+                        if (countdown.isFinished()) {
+                            init();
                         } else {
-                            pause();
+                            if (countdown.isPause()) {
+                                start();
+                            } else {
+                                pause();
+                            }
                         }
-                    }
-                } else if (e.getKeyChar() == 27) {
-                    init();
+                        break;
+                    case 27:
+                        init();
+                        break;
+                    case 49:
+                        if (countdown.isReady()) {
+                            setTeam(1);
+                        }
+                        break;
+                    case 50:
+                        if (countdown.isReady()) {
+                            setTeam(2);
+                        }
+                        break;
                 }
             }
 
@@ -66,13 +81,26 @@ public class CountDownFrame extends JFrame {
         setVisible(true);
     }
 
+    private void startTimer() {
+        timer.scheduleAtFixedRate(countdownTimerTask, 1000, 1000);
+        init();
+        System.out.println("TimerTask started.");
+    }
+
     public void init() {
         countdown.reset();
-        countdown.setPause(true);
-        count.setForeground(Color.DARK_GRAY);
-        panel.setBackground(Color.GREEN);
-        count.setText(countdown.toReadableString());
-        System.out.println("TimerTask started.");
+        count.setForeground(Color.WHITE);
+        team.setForeground(Color.WHITE);
+        panel.setBackground(Color.RED);
+        count.setText("PRE SHOT");
+        team.setText("SELECT TEAM");
+        System.out.println("Phase: Init.");
+    }
+
+    private void setTeam(int teamNumber) {
+        team.setText("TEAM " + teamNumber);
+        beeperTimerTask = new BeeperTimerTask(2);
+        timer.scheduleAtFixedRate(beeperTimerTask, 1000, 2000);
     }
 
     public void start() {
@@ -85,26 +113,32 @@ public class CountDownFrame extends JFrame {
         System.out.println("TimerTask paused.");
     }
 
-
     private JPanel initText() {
         count = new JLabel();
-        count.setFont(new Font("Arial Black", Font.BOLD, 500));
+        count.setFont(new Font("Arial Black", Font.BOLD, 300));
         count.setHorizontalAlignment(SwingConstants.CENTER);
         count.setVerticalAlignment(SwingConstants.CENTER);
-        count.setForeground(Color.DARK_GRAY);
-        panel = new JPanel(new GridLayout(1, 1));
+
+        team = new JLabel();
+        team.setFont(new Font("Arial Black", Font.BOLD, 150));
+        team.setHorizontalAlignment(SwingConstants.CENTER);
+        team.setVerticalAlignment(SwingConstants.CENTER);
+
+        panel = new JPanel(new GridLayout(2, 1));
         panel.add(count);
-        panel.setBackground(Color.GREEN);
+        panel.add(team);
         return panel;
     }
 
-    private void startTimer() {
-        count.setText(countdown.toReadableString());
-        timer.scheduleAtFixedRate(timerTask, 1000, 1000);
-        System.out.println("TimerTask started.");
+    private void beep() {
+        try {
+            SoundUtils.tone(600,600);
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+        }
     }
 
-    class MyTimerTask extends TimerTask {
+    class CountdownTimerTask extends TimerTask {
 
         @Override
         public void run() {
@@ -124,14 +158,26 @@ public class CountDownFrame extends JFrame {
 
             }
         }
+    }
 
-        private void beep() {
-            try {
-                SoundUtils.tone(600,500);
-            } catch (LineUnavailableException e) {
-                e.printStackTrace();
+    class BeeperTimerTask extends TimerTask {
+
+        int count;
+
+        public BeeperTimerTask(int count) {
+            this.count = count;
+        }
+
+        @Override
+        public void run() {
+            if (count == 0) {
+                start();
+            } else {
+                beep();
+                count--;
             }
         }
     }
+
 
 }

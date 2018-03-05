@@ -12,12 +12,16 @@ public class Countdown {
     }
 
     public void reset() {
-        setPause(false);
+        setPause(true);
         this.seconds = initTime;
     }
 
     public void setPause(boolean pause) {
         this.pause = pause;
+    }
+
+    public boolean isReady() {
+        return seconds == initTime;
     }
 
     public boolean isPause() {
