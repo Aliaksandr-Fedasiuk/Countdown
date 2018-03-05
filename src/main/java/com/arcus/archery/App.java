@@ -7,20 +7,7 @@ import java.io.IOException;
 public class App {
 
     public static void main(String[] args) {
-
-        int time = 180;
-        if (args.length > 0) {
-            try {
-                int _time = Integer.valueOf(args[0]);
-                if (_time > 500) {
-                    _time = time;
-                }
-                time = _time;
-            } catch (NumberFormatException nfe) {
-
-            }
-        }
-
+        int time = 20;
         try {
             LocalDevice localDevice = LocalDevice.getLocalDevice();
             System.out.println("Address: " + localDevice.getBluetoothAddress());

@@ -99,13 +99,13 @@ public class CountDownFrame extends JFrame {
 
     private void setTeam(int teamNumber) {
         team.setText("TEAM " + teamNumber);
-        beeperTimerTask = new BeeperTimerTask(2);
+        beeperTimerTask = new BeeperPreShotTimerTask(2);
         timer.scheduleAtFixedRate(beeperTimerTask, 1000, 2000);
     }
 
     public void start() {
-        countdown.setPause(false);
-        System.out.println("TimerTask restarted.");
+        beeperTimerTask = new BeeperBeforeShortTimerTask();
+        timer.scheduleAtFixedRate(beeperTimerTask, 1000, 1000);
     }
 
     public void pause() {
@@ -160,11 +160,11 @@ public class CountDownFrame extends JFrame {
         }
     }
 
-    class BeeperTimerTask extends TimerTask {
+    class BeeperPreShotTimerTask extends TimerTask {
 
         int count;
 
-        public BeeperTimerTask(int count) {
+        public BeeperPreShotTimerTask(int count) {
             this.count = count;
         }
 
@@ -179,5 +179,14 @@ public class CountDownFrame extends JFrame {
         }
     }
 
+    class BeeperBeforeShortTimerTask extends TimerTask {
+
+        @Override
+        public void run() {
+            beep();
+            countdown.setPause(false);
+            System.out.println("TimerTask restarted.");
+        }
+    }
 
 }
