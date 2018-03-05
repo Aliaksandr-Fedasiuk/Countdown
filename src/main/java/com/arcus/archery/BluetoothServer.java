@@ -15,7 +15,7 @@ public class BluetoothServer {
     boolean run = true;
 
     // start server
-    public void startServer(CountDownFrame countDownFrame) throws IOException {
+    public void startServer(UIFrame uiFrame) throws IOException {
         // Create a UUID for SPP
         UUID uuid = new UUID("0000110100001000800000805F9B34FB", false);
         // Create the servicve url
@@ -39,13 +39,11 @@ public class BluetoothServer {
             String lineRead = bReader.readLine();
             if (lineRead != null && !lineRead.isEmpty()) {
                 if (lineRead.equals("i")) {
-                    countDownFrame.init();
-                } else if (lineRead.equals("p")) {
-                    countDownFrame.pause();
-                } else if (lineRead.equals("s")) {
-                    countDownFrame.start();
-                } else if (lineRead.equals("exit")) {
-                    run = false;
+                    uiFrame.init();
+                } else if (lineRead.equals("1")) {
+                    uiFrame.setTeamAndStartTimer(1);
+                } else if (lineRead.equals("2")) {
+                    uiFrame.setTeamAndStartTimer(2);
                 }
                 System.out.println("Message from mobile device: " + lineRead);
             }

@@ -7,16 +7,15 @@ import java.io.IOException;
 public class App {
 
     public static void main(String[] args) {
-        int time = 20;
         try {
             LocalDevice localDevice = LocalDevice.getLocalDevice();
             System.out.println("Address: " + localDevice.getBluetoothAddress());
             System.out.println("Name: " + localDevice.getFriendlyName());
             BluetoothServer sampleSPPServer = new BluetoothServer();
-            sampleSPPServer.startServer(new CountDownFrame(new Countdown(time)));
+            sampleSPPServer.startServer(new UIFrame());
         } catch (BluetoothStateException be) {
             System.out.println(String.format("ERROR: %s", be.getStackTrace()));
-            new CountDownFrame(new Countdown(time));
+            new UIFrame();
         } catch (Exception e) {
             System.out.println(String.format("ERROR: %s", e.getStackTrace()));
         }
