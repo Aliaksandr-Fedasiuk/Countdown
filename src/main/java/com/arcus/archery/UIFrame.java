@@ -179,7 +179,7 @@ public class UIFrame extends JFrame {
                 init();
             } else {
                 System.out.println("ShotTimer: " + dateFormat.format(Calendar.getInstance().getTime()) + " :" + cnt + ", round: " + globalCount);
-                if (cnt > 0) {
+                if (cnt > 3) {
                     setGreenSchema();
                 } else {
                     setRedSchema();
@@ -187,7 +187,7 @@ public class UIFrame extends JFrame {
                 count.setText(String.valueOf(cnt));
                 team.setText(TARGET + ((selectedTeam ? 1 : 0) + 1));
                 cnt--;
-                if (cnt < 0 || isSkipRound) {
+                if (cnt < 1 || isSkipRound) {
                     if (isSkipRound) {
                         count.setText(String.valueOf("0"));
                         setRedSchema();
