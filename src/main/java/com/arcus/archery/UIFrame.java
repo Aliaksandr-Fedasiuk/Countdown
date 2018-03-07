@@ -15,7 +15,13 @@ import java.util.TimerTask;
 
 public class UIFrame extends JFrame {
 
+    public static final String STOP_SHOOTING = "<html><div style=\"text-align:center\">STOP<br>SHOOTING</div></html>";
     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+    static final String ARIAL_BLACK = "Arial Black";
+    static final String SELECT_TARGET = "SELECT TARGET";
+    static final String PRE_SHOT = "PRE SHOT";
+    static final String TARGET = "TARGET ";
 
     private java.util.Timer timer = new Timer(true);
 
@@ -27,6 +33,7 @@ public class UIFrame extends JFrame {
     private boolean selectedTeam;
     private boolean isActive = false;
     private boolean isSkipRound = false;
+    private boolean isStopShooting = false;
 
     public UIFrame() {
         setUndecorated(true);
@@ -66,7 +73,10 @@ public class UIFrame extends JFrame {
                     isSkipRound = true;
                     break;
                 case 27: //esc
-                    init();
+                    isStopShooting = true;
+                    if (!isActive) {
+                        init();
+                    }
                     break;
                 case 49: //1
                     if (!isActive) setTeamAndStartTimer(1);
@@ -80,42 +90,44 @@ public class UIFrame extends JFrame {
 
     private JPanel initUIElements() {
         count = new JLabel();
-        count.setFont(new Font("Arial Black", Font.BOLD, 200));
+        count.setFont(new Font(ARIAL_BLACK, Font.BOLD, 200));
         count.setHorizontalAlignment(SwingConstants.CENTER);
         count.setVerticalAlignment(SwingConstants.CENTER);
 
         team = new JLabel();
-        team.setFont(new Font("Arial Black", Font.BOLD, 110));
+        team.setFont(new Font(ARIAL_BLACK, Font.BOLD, 110));
         team.setHorizontalAlignment(SwingConstants.CENTER);
         team.setVerticalAlignment(SwingConstants.CENTER);
 
-        panel = new JPanel(new GridLayout(2, 1));
-        panel.add(count);
-        panel.add(team);
+        panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(count, BorderLayout.CENTER);
+        panel.add(team, BorderLayout.SOUTH);
         return panel;
     }
 
     public void init() {
         globalCount = 6;
         isActive = false;
-        isSkipRound = false;
+        count.setFont(new Font(ARIAL_BLACK, Font.BOLD, 200));
         count.setForeground(Color.WHITE);
         team.setForeground(Color.WHITE);
         panel.setBackground(Color.RED);
-        count.setText("PRE SHOT");
-        team.setText("SELECT BOARD");
+        count.setText(PRE_SHOT);
+        team.setText(SELECT_TARGET);
         System.out.println("Phase: Init.");
     }
 
     public void setTeamAndStartTimer(int teamNumber) {
         isActive = true;
-        selectedTeam = (teamNumber - 1) == 1;
+        isSkipRound = false;
+        isStopShooting = false;
 
-        count.setForeground(Color.WHITE);
+        selectedTeam = (teamNumber - 1) == 1;
+        count.setFont(new Font(ARIAL_BLACK, Font.BOLD, 500));
         count.setText("10");
-        team.setForeground(Color.WHITE);
-        team.setText("BOARD " + ((selectedTeam ? 1 : 0) + 1));
-        panel.setBackground(Color.RED);
+        team.setText(TARGET + ((selectedTeam ? 1 : 0) + 1));
+        setRedSchema();
 
         System.out.println("BeeperPreShotTimer: " + dateFormat.format(Calendar.getInstance().getTime()));
         timer.scheduleAtFixedRate(new Beeper(2), 1000, 1000);
@@ -126,19 +138,27 @@ public class UIFrame extends JFrame {
         int cnt = 10;
         @Override
         public void run() {
-            System.out.println("PreShotCountdownTimer: " + dateFormat.format(Calendar.getInstance().getTime()) + " :" + cnt);
-            count.setForeground(Color.WHITE);
-            panel.setBackground(Color.RED);
-            count.setText(String.valueOf(cnt));
-            cnt--;
-            if (cnt <= 0) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                startShortTimer();
+            if (isStopShooting || isSkipRound) {
+                System.out.println("PreShotCountdownTimer stop : " + dateFormat.format(Calendar.getInstance().getTime())
+                        + " :" + cnt + ", round: " + globalCount);
                 cancel();
+                init();
+            } else {
+                System.out.println("PreShotCountdownTimer: " + dateFormat.format(Calendar.getInstance().getTime())
+                        + " :" + cnt + ", round: " + globalCount);
+                count.setFont(new Font(ARIAL_BLACK, Font.BOLD, 500));
+                setRedSchema();
+                count.setText(String.valueOf(cnt));
+                cnt--;
+                if (cnt <= 0) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    startShortTimer();
+                    cancel();
+                }
             }
         }
     }
@@ -150,37 +170,63 @@ public class UIFrame extends JFrame {
 
     class ShotTimer extends TimerTask {
         int cnt = 20;
+
         @Override
         public void run() {
-            System.out.println("ShotTimer: " + dateFormat.format(Calendar.getInstance().getTime()) + " :" + cnt);
-            count.setForeground(Color.DARK_GRAY);
-            count.setText(String.valueOf(cnt));
-            team.setForeground(Color.DARK_GRAY);
-            team.setText("BOARD " + ((selectedTeam ? 1 : 0) + 1));
-            panel.setBackground(Color.GREEN);
-            cnt--;
-            if (cnt < 0 || isSkipRound) {
-                isSkipRound = false;
-                globalCount--;
-                if (globalCount > 0) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    selectedTeam = !selectedTeam;
-                    startShortTimer();
-                } else {
-                    count.setForeground(Color.WHITE);
-                    count.setText("STOP");
-                    team.setForeground(Color.WHITE);
-                    team.setText("SHOOTING");
-                    panel.setBackground(Color.RED);
-                    timer.scheduleAtFixedRate(new Beeper(3), 1000, 1000);
-                }
+            if (isStopShooting) {
+                System.out.println("ShotTimer stop : " + dateFormat.format(Calendar.getInstance().getTime()) + " :" + cnt + ", round: " + globalCount);
                 cancel();
+                init();
+            } else {
+                System.out.println("ShotTimer: " + dateFormat.format(Calendar.getInstance().getTime()) + " :" + cnt + ", round: " + globalCount);
+                if (cnt > 0) {
+                    setGreenSchema();
+                } else {
+                    setRedSchema();
+                }
+                count.setText(String.valueOf(cnt));
+                team.setText(TARGET + ((selectedTeam ? 1 : 0) + 1));
+                cnt--;
+                if (cnt < 0 || isSkipRound) {
+                    if (isSkipRound) {
+                        count.setText(String.valueOf("0"));
+                        setRedSchema();
+                    }
+                    isSkipRound = false;
+                    globalCount--;
+                    if (globalCount > 0) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        selectedTeam = !selectedTeam;
+                        startShortTimer();
+                    } else {
+                        count.setFont(new Font(ARIAL_BLACK, Font.BOLD, 200));
+                        count.setText(STOP_SHOOTING);
+                        team.setText("");
+                        setRedSchema();
+                        timer.scheduleAtFixedRate(new Beeper(3), 1000, 1000);
+                        isActive = false;
+                        isStopShooting = true;
+                    }
+                    cancel();
+                }
             }
         }
+    }
+
+    private void setRedSchema() {
+        count.setForeground(Color.WHITE);
+        team.setForeground(Color.WHITE);
+        panel.setBackground(Color.RED);
+    }
+
+    private void setGreenSchema() {
+        count.setForeground(Color.DARK_GRAY);
+        team.setForeground(Color.DARK_GRAY);
+        panel.setBackground(Color.GREEN);
     }
 
     class Beeper extends TimerTask {
